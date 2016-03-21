@@ -1,11 +1,19 @@
 var electron = require('electron')
 
-electron.app.on('ready', function() {
+electron.app.on('ready', function () {
   var electronScreen = electron.screen
-  var size = electronScreen.getPrimaryDisplay().workAreaSize 
+  var size = electronScreen.getPrimaryDisplay().workAreaSize
   var win = new electron.BrowserWindow({width: size.width, height: size.height, fullscreen: true})
-  win.loadURL('file://' + __dirname + '/index.html')  
-  win.webContents.on('did-finish-load', function () {
-    win.send('new-tab', 'http://maxogden.com')
+  win.loadURL('file://' + __dirname + '/index.html')
+
+  var canClose = true
+  win.on('close', function (e) {
+    console.log('close?', canClose)
+    if (!canClose) e.preventDefault()
+  })
+  electron.ipcMain.on('tab-change', function (event, tabCount) {
+    if (tabCount === 0) canClose = true
+    else if (tabCount < 0) win.close()
+    else canClose = false
   })
 })

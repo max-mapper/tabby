@@ -1,10 +1,16 @@
 {
   "name": "tabby",
   "version": "1.0.0",
-  "description": "",
+  "description": "a browser with almost no UI",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron index.js",
+    "test": "standard"
+  },
+  "standard": {
+    "ignore": [
+      "meny.js"
+    ]
   },
   "keywords": [],
   "author": "",
@@ -12,5 +18,8 @@
   "dependencies": {
     "rainbow-load": "0.0.6",
     "vkey": "^1.0.0"
+  },
+  "devDependencies": {
+    "standard": "^6.0.8"
   }
 }

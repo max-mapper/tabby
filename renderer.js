@@ -1,22 +1,28 @@
 var electron = require('electron')
+var remote = require('remote')
 var yo = require('yo-yo')
-var load = require('rainbow-load') 
+var load = require('rainbow-load')
 var vkey = require('vkey')
-var Meny = require('./meny.js')
+var url = require('url')
+var Menu = require('./menu.js')
 
 module.exports = function () {
-  var tabs = []
-  var meny = createMeny()
-  initShortcuts()
-  electron.ipcRenderer.on('new-tab', function (event, src) {
-    newTab(src)
+  var menu = Menu(function onNewURL (href) {
+    var parsed = url.parse(href)
+    if (!parsed.protocol) href = 'http://' + href
+    currentTab().setAttribute('src', href)
   })
-  
+  var tabs = []
+  initShortcuts()
+  newTab()
+
   window.tabs = tabs
   window.showTab = showTab
   window.newTab = newTab
-  
+  window.changeTab = changeTab
+
   function newTab (src) {
+    if (!src) src = 'file://' + __dirname + '/newtab.html'
     var tab = yo`<webview src="${src}"></webview>`
     tabs.push(tab)
     showTab(tab)
@@ -24,67 +30,74 @@ module.exports = function () {
       load.show()
     })
     tab.addEventListener('did-stop-loading', function () {
+      menu.input.value = tab.getAttribute('src')
       load.hide()
     })
+
     var content = document.querySelector('.tabs')
     content.appendChild(tab)
+    electron.ipcRenderer.send('tab-change', tabs.length)
   }
-  
+
+  function currentTab () {
+    for (var i = 0; i < tabs.length; i++) {
+      if (tabs[i].getAttribute('style').match('block')) return tabs[i]
+    }
+  }
+
   function showTab (tab) {
     var idx = tabs.indexOf(tab)
     if (idx === -1) return
     for (var i = 0; i < tabs.length; i++) {
-      if (i === idx) tabs[i].setAttribute('style', 'display: block')
-      else tabs[i].setAttribute('style', 'display: none')
+      if (i === idx) {
+        tabs[i].setAttribute('style', 'display: block')
+        menu.input.value = tabs[i].getAttribute('src')
+      } else {
+        tabs[i].setAttribute('style', 'display: none')
+      }
     }
   }
-  
-  function initShortcuts () {
-    document.body.addEventListener('keydown', function (ev) {
-      if (vkey[ev.keyCode] === '`') meny.isOpen() ? meny.close() : meny.open()
-    }, false)
+
+  function changeTab (num) {
+    for (var i = 0; i < tabs.length; i++) {
+      if (tabs[i].getAttribute('style').match('block')) {
+        var next = i + num
+        if (next >= tabs.length) next = 0
+        if (next === -1) next = tabs.length - 1
+        var nextTab = tabs[next]
+        if (!nextTab) return console.error('Tab change error', {num: num, next: next, tabs: tabs.length})
+        return showTab(nextTab)
+      }
+    }
   }
-}
 
-function createMeny () {
-  return Meny.create({
-    // The element that will be animated in from off screen
-    menuElement: document.querySelector( '.menu' ),
+  function closeTab (tab) {
+    var idx = tabs.indexOf(tab)
+    if (idx === -1) return
+    if (tabs.length === 1) return electron.ipcRenderer.send('tab-change', 0)
+    document.querySelector('.tabs').removeChild(tab)
+    changeTab(-1)
+    tabs.splice(idx, 1)
+    electron.ipcRenderer.send('tab-change', tabs.length)
+  }
 
-    // The contents that gets pushed aside while Meny is active
-    contentsElement: document.querySelector( '.tabs' ),
-
-    // The alignment of the menu (top/right/bottom/left)
-    position: 'top',
-
-    // The height of the menu (when using top/bottom position)
-    height: 100,
-
-    // The width of the menu (when using left/right position)
-    width: 260,
-
-    // The angle at which the contents will rotate to.
-    angle: 30,
-
-    // The mouse distance from menu position which can trigger menu to open.
-    threshold: 40,
-
-    // Width(in px) of the thin line you see on screen when menu is in closed position.
-    overlap: 6,
-
-    // The total time taken by menu animation.
-    transitionDuration: '0.25s',
-
-    // Transition style for menu animations
-    transitionEasing: 'ease',
-
-    // Gradient overlay for the contents
-    gradient: 'rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.65) 100%)',
-
-    // Use mouse movement to automatically open/close
-    mouse: true,
-
-    // Use touch swipe events to open/close
-    touch: true
-  })
+  function initShortcuts () {
+    window.addEventListener('keydown', handlekeydown, false)
+    function handlekeydown (e) {
+      var tab = currentTab()
+      var k = vkey[e.keyCode]
+      if (k === ']' && e.shiftKey && e.metaKey) changeTab(1)
+      if (k === '[' && e.shiftKey && e.metaKey) changeTab(-1)
+      if (k === 'R' && e.metaKey) {
+        if (e.shiftKey) tab.reloadIgnoringCache()
+        else tab.reload()
+      }
+      if (k === '<left>' && e.metaKey) tab.goBack()
+      if (k === '<right>' && e.metaKey) tab.goForward()
+      if (k === 'L' && e.metaKey) menu.toggle()
+      if (k === 'T' && e.metaKey) newTab()
+      if (k === 'W' && e.metaKey) closeTab(currentTab())
+      if (k === 'Q' && e.metaKey) remote.getCurrentWindow().destroy()
+    }
+  }
 }
