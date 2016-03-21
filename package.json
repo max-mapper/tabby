@@ -27,5 +27,9 @@
     "electron-packager": "^5.2.1",
     "electron-prebuilt": "^0.36.11",
     "standard": "^6.0.8"
+  },
+  "homepage": "https://github.com/maxogden/tabby",
+  "bugs": {
+    "url": "https://github.com/maxogden/tabby/issues"
   }
 }
