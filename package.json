@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron index.js",
     "test": "standard",
-    "build": "electron-packager . Tabby --platform=darwin --arch=x64 --version=0.37.2 --prune --icon=Icon.icns"
+    "build": "electron-packager . Tabby --platform=darwin --arch=x64 --version=0.36.11 --prune --icon=Icon.icns"
   },
   "standard": {
     "ignore": [
@@ -24,7 +24,8 @@
     "yo-yo": "^1.1.1"
   },
   "devDependencies": {
-    "electron-prebuilt": "^0.37.2",
+    "electron-packager": "^5.2.1",
+    "electron-prebuilt": "^0.36.11",
     "standard": "^6.0.8"
   }
 }

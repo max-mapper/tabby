@@ -128,8 +128,8 @@ module.exports = function () {
     function handlekeydown (e) {
       var tab = currentTab()
       var k = vkey[e.keyCode]
-      if (k === ']' && e.shiftKey && e.metaKey) changeTab(1)
-      if (k === '[' && e.shiftKey && e.metaKey) changeTab(-1)
+      if (k === ']' && e.metaKey) changeTab(1)
+      if (k === '[' && e.metaKey) changeTab(-1)
       if (k === 'R' && e.metaKey) {
         if (e.shiftKey) tab.reloadIgnoringCache()
         else tab.reload()
