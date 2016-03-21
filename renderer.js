@@ -9,7 +9,8 @@ tld.defaultFile = path.join(__dirname, 'tlds.dat')
 var Menu = require('./menu.js')
 var pkg = require('./package.json')
 
-var errPage = path.join('file://', __dirname, 'error.html')
+var errPage = 'file://' + __dirname + '/error.html'
+var newPage = 'file://' + __dirname + '/newtab.html'
 
 module.exports = function () {
   var menu = Menu(function onNewURL (href) {
@@ -54,26 +55,37 @@ module.exports = function () {
   window.changeTab = changeTab
 
   function newTab (src) {
-    if (!src) src = path.join('file://', __dirname, 'newtab.html')
+    if (!src) src = newPage
     var tab = yo`<webview src="${src}"></webview>`
     tabs.push(tab)
     showTab(tab)
     tab.addEventListener('did-start-loading', function () {
-      if (tab.getAttribute('src') === errPage) return
+      var src = tab.getAttribute('src')
+      console.log('did-start-loading', src)
+      if (src === errPage) return true
+      menu.input.value = src
       delete tab.__GOT_RESPONSE
       load.show()
+      return true
     })
     tab.addEventListener('did-stop-loading', function () {
-      if (tab.getAttribute('src') === errPage) return
-      menu.input.value = tab.getAttribute('src')
+      var src = tab.getAttribute('src')
+      console.log('did-stop-loading', src)
+      if (src === errPage) return true
+      menu.input.value = src
       load.hide()
-      if (!tab.__GOT_RESPONSE) {
+      if (tab.__LOADFAIL) {
+        console.error('Error loading', src)
         tab.setAttribute('src', errPage)
-        console.error('Error loading')
       }
+      return true
+    })
+    tab.addEventListener('did-navigate-in-page', function (e) {
+      tab.__LOADFAIL = false
+      load.hide()
     })
     tab.addEventListener('did-get-response-details', function () {
-      tab.__GOT_RESPONSE = true
+      tab.__LOADFAIL = false
     })
 
     var content = document.querySelector('.tabs')
