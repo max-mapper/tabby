@@ -1,15 +1,15 @@
 var url = require('url')
 var dns = require('dns')
+var path = require('path')
 var electron = require('electron')
-var remote = require('remote')
 var yo = require('yo-yo')
 var load = require('rainbow-load')
-var vkey = require('vkey')
 var tld = require('tld')
-tld.defaultFile = __dirname + '/tlds.dat'
+tld.defaultFile = path.join(__dirname, 'tlds.dat')
 var Menu = require('./menu.js')
+var pkg = require('./package.json')
 
-var errPage = 'file://' + __dirname + '/error.html'
+var errPage = path.join('file://', __dirname, 'error.html')
 
 module.exports = function () {
   var menu = Menu(function onNewURL (href) {
@@ -30,7 +30,7 @@ module.exports = function () {
       queryFinished = true
       search(original)
     }, 250)
-    
+
     dns.lookup(parsed.hostname, function (err, address) {
       console.log('dns', err, address)
       if (queryFinished) return
@@ -38,7 +38,7 @@ module.exports = function () {
       if (err) return search(original)
       else tab.setAttribute('src', href)
     })
-    
+
     function search (href) {
       href = 'https://duckduckgo.com/?q=' + href.split(' ').join('+')
       return tab.setAttribute('src', href)
@@ -54,7 +54,7 @@ module.exports = function () {
   window.changeTab = changeTab
 
   function newTab (src) {
-    if (!src) src = 'file://' + __dirname + '/newtab.html'
+    if (!src) src = path.join('file://', __dirname, 'newtab.html')
     var tab = yo`<webview src="${src}"></webview>`
     tabs.push(tab)
     showTab(tab)
@@ -116,30 +116,26 @@ module.exports = function () {
   function closeTab (tab) {
     var idx = tabs.indexOf(tab)
     if (idx === -1) return
-    if (tabs.length === 1) return electron.ipcRenderer.send('tab-change', 0)
+    if (tabs.length === 1) return electron.remote.getCurrentWindow().close()
     document.querySelector('.tabs').removeChild(tab)
     changeTab(-1)
     tabs.splice(idx, 1)
-    electron.ipcRenderer.send('tab-change', tabs.length)
   }
 
   function initShortcuts () {
-    window.addEventListener('keydown', handlekeydown, false)
-    function handlekeydown (e) {
+    electron.ipcRenderer.on('appmenu', function (event, type) {
       var tab = currentTab()
-      var k = vkey[e.keyCode]
-      if (k === ']' && e.shiftKey && e.metaKey) changeTab(1)
-      if (k === '[' && e.shiftKey && e.metaKey) changeTab(-1)
-      if (k === 'R' && e.metaKey) {
-        if (e.shiftKey) tab.reloadIgnoringCache()
-        else tab.reload()
-      }
-      if (k === '<left>' && e.metaKey) tab.goBack()
-      if (k === '<right>' && e.metaKey) tab.goForward()
-      if (k === 'L' && e.metaKey) menu.toggle()
-      if (k === 'T' && e.metaKey) newTab()
-      if (k === 'W' && e.metaKey) closeTab(currentTab())
-      if (k === 'Q' && e.metaKey) remote.getCurrentWindow().destroy()
-    }
+      if (type === 'file:new-tab') newTab()
+      if (type === 'file:open-location') menu.toggle()
+      if (type === 'file:close-tab') closeTab(tab)
+      if (type === 'view:reload') tab.reload()
+      if (type === 'view:hard-reload') tab.reloadIgnoringCache()
+      if (type === 'history:back') tab.goBack()
+      if (type === 'history:forward') tab.goForward()
+      if (type === 'window:next-tab') changeTab(1)
+      if (type === 'window:previous-tab') changeTab(-1)
+      if (type === 'help:report-issue') newTab(pkg.bugs.url)
+      if (type === 'help:learn-more') newTab(pkg.homepage)
+    })
   }
 }

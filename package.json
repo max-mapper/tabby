@@ -26,5 +26,9 @@
   "devDependencies": {
     "electron-prebuilt": "^0.37.2",
     "standard": "^6.0.8"
+  },
+  "homepage": "https://github.com/maxogden/tabby",
+  "bugs": {
+    "url": "https://github.com/maxogden/tabby/issues"
   }
 }
