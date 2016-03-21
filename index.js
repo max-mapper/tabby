@@ -5,10 +5,8 @@ electron.app.on('ready', function () {
   var size = electronScreen.getPrimaryDisplay().workAreaSize
   var win = new electron.BrowserWindow({width: size.width, height: size.height, fullscreen: true})
   win.loadURL('file://' + __dirname + '/index.html')
-
   var canClose = true
   win.on('close', function (e) {
-    console.log('close?', canClose)
     if (!canClose) e.preventDefault()
   })
   electron.ipcMain.on('tab-change', function (event, tabCount) {

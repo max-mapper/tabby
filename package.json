@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "electron index.js",
-    "test": "standard"
+    "test": "standard",
+    "build": "electron-packager . Tabby --platform=darwin --arch=x64 --version=0.37.2 --prune --icon=Icon.icns"
   },
   "standard": {
     "ignore": [
@@ -16,10 +17,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "csjs-inject": "^1.0.0",
     "rainbow-load": "0.0.6",
-    "vkey": "^1.0.0"
+    "tld": "0.0.2",
+    "vkey": "^1.0.0",
+    "yo-yo": "^1.1.1"
   },
   "devDependencies": {
+    "electron-prebuilt": "^0.37.2",
     "standard": "^6.0.8"
   }
 }

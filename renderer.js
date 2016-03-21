@@ -1,16 +1,48 @@
+var url = require('url')
+var dns = require('dns')
 var electron = require('electron')
 var remote = require('remote')
 var yo = require('yo-yo')
 var load = require('rainbow-load')
 var vkey = require('vkey')
-var url = require('url')
+var tld = require('tld')
+tld.defaultFile = __dirname + '/tlds.dat'
 var Menu = require('./menu.js')
+
+var errPage = 'file://' + __dirname + '/error.html'
 
 module.exports = function () {
   var menu = Menu(function onNewURL (href) {
+    var original = href
+    var tab = currentTab()
+    if (href.indexOf(' ') > -1) return search(original)
     var parsed = url.parse(href)
-    if (!parsed.protocol) href = 'http://' + href
-    currentTab().setAttribute('src', href)
+    if (!parsed.protocol) {
+      href = 'http://' + href
+      parsed = url.parse(href)
+    }
+    var validTld = tld.registered(parsed.hostname)
+    if (validTld && href.indexOf('.') > -1) return tab.setAttribute('src', href)
+
+    var queryFinished = false
+    setTimeout(function () {
+      if (queryFinished) return
+      queryFinished = true
+      search(original)
+    }, 250)
+    
+    dns.lookup(parsed.hostname, function (err, address) {
+      console.log('dns', err, address)
+      if (queryFinished) return
+      queryFinished = true
+      if (err) return search(original)
+      else tab.setAttribute('src', href)
+    })
+    
+    function search (href) {
+      href = 'https://duckduckgo.com/?q=' + href.split(' ').join('+')
+      return tab.setAttribute('src', href)
+    }
   })
   var tabs = []
   initShortcuts()
@@ -27,11 +59,21 @@ module.exports = function () {
     tabs.push(tab)
     showTab(tab)
     tab.addEventListener('did-start-loading', function () {
+      if (tab.getAttribute('src') === errPage) return
+      delete tab.__GOT_RESPONSE
       load.show()
     })
     tab.addEventListener('did-stop-loading', function () {
+      if (tab.getAttribute('src') === errPage) return
       menu.input.value = tab.getAttribute('src')
       load.hide()
+      if (!tab.__GOT_RESPONSE) {
+        tab.setAttribute('src', errPage)
+        console.error('Error loading')
+      }
+    })
+    tab.addEventListener('did-get-response-details', function () {
+      tab.__GOT_RESPONSE = true
     })
 
     var content = document.querySelector('.tabs')
@@ -41,7 +83,7 @@ module.exports = function () {
 
   function currentTab () {
     for (var i = 0; i < tabs.length; i++) {
-      if (tabs[i].getAttribute('style').match('block')) return tabs[i]
+      if (tabs[i].getAttribute('style').match('flex')) return tabs[i]
     }
   }
 
@@ -50,7 +92,7 @@ module.exports = function () {
     if (idx === -1) return
     for (var i = 0; i < tabs.length; i++) {
       if (i === idx) {
-        tabs[i].setAttribute('style', 'display: block')
+        tabs[i].setAttribute('style', 'display: flex')
         menu.input.value = tabs[i].getAttribute('src')
       } else {
         tabs[i].setAttribute('style', 'display: none')
@@ -60,7 +102,7 @@ module.exports = function () {
 
   function changeTab (num) {
     for (var i = 0; i < tabs.length; i++) {
-      if (tabs[i].getAttribute('style').match('block')) {
+      if (tabs[i].getAttribute('style').match('flex')) {
         var next = i + num
         if (next >= tabs.length) next = 0
         if (next === -1) next = tabs.length - 1
