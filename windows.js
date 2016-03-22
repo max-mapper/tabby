@@ -16,6 +16,7 @@ function create () {
   var win = new electron.BrowserWindow({
     width: size.width,
     height: size.height,
+    titleBarStyle: 'hidden',
     title: 'Tabby'
   })
   win.loadURL(path.join('file://', __dirname, 'index.html'))
