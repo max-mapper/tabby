@@ -14,6 +14,7 @@ module.exports = function (onupdate) {
     font-family: "Helvetica Neue";
     font-weight: 200;
     outline: none;
+    padding-left: 70px;
   }`
   var input = yo`<input class="${styles.input}" onkeydown=${onkeydown}></input>`
   menuEl.appendChild(input)
