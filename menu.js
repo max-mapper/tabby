@@ -11,7 +11,7 @@ module.exports = function (onupdate) {
     height: 25px;
     width: 100%;
     font-size: 14px;
-    font-family: "Helvetica Neue";
+    font-family: sans-serif;
     font-weight: 200;
     outline: none;
     padding-left: 70px;
