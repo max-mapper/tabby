@@ -32,7 +32,11 @@ module.exports = function (onupdate) {
   function onkeydown (e) {
     if (vkey[e.keyCode] === '<enter>') {
       onupdate(input.value)
-      toggle()
+      return toggle()
+    }
+
+    if (vkey[e.keyCode] === '<escape>') {
+      return toggle()
     }
   }
 
