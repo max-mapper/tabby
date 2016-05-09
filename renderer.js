@@ -87,6 +87,9 @@ module.exports = function () {
     tab.addEventListener('did-get-response-details', function () {
       tab.__LOADFAIL = false
     })
+    tab.addEventListener('page-title-updated', function (e) {
+      electron.remote.getCurrentWindow().setTitle(e.title)
+    })
 
     var content = document.querySelector('.tabs')
     content.appendChild(tab)
