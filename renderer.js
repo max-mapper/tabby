@@ -9,8 +9,8 @@ tld.defaultFile = path.join(__dirname, 'tlds.dat')
 var Menu = require('./menu.js')
 var pkg = require('./package.json')
 
-var errPage = 'file://' + __dirname + '/error.html'
-var newPage = 'file://' + __dirname + '/newtab.html'
+var errPage = path.join('file://', __dirname, '/error.html')
+var newPage = path.join('file://', __dirname, '/newtab.html')
 
 module.exports = function () {
   var menu = Menu(function onNewURL (href) {
@@ -86,6 +86,9 @@ module.exports = function () {
     })
     tab.addEventListener('did-get-response-details', function () {
       tab.__LOADFAIL = false
+    })
+    tab.addEventListener('page-title-updated', function (e) {
+      electron.remote.getCurrentWindow().setTitle(e.title)
     })
 
     var content = document.querySelector('.tabs')
