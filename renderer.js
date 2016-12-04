@@ -9,8 +9,8 @@ tld.defaultFile = path.join(__dirname, 'tlds.dat')
 var Menu = require('./menu.js')
 var pkg = require('./package.json')
 
-var errPage = 'file://' + __dirname + '/error.html'
-var newPage = 'file://' + __dirname + '/newtab.html'
+var errPage = 'file://' + path.join(__dirname, 'error.html')
+var newPage = 'file://' + path.join(__dirname, 'newtab.html')
 
 module.exports = function () {
   var menu = Menu(function onNewURL (href) {
