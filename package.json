@@ -1,21 +1,11 @@
 {
   "name": "tabby",
-  "version": "1.0.0",
   "description": "a browser with almost no UI",
-  "main": "index.js",
-  "scripts": {
-    "start": "electron index.js",
-    "test": "standard",
-    "build": "electron-packager . Tabby --platform=darwin --arch=x64 --version=1.4.10 --prune --icon=Icon.icns"
+  "version": "1.0.0",
+  "author": "max ogden",
+  "bugs": {
+    "url": "https://github.com/maxogden/tabby/issues"
   },
-  "standard": {
-    "ignore": [
-      "meny.js"
-    ]
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "csjs-inject": "^1.0.0",
     "rainbow-load": "0.0.6",
@@ -29,7 +19,26 @@
     "standard": "^8.6.0"
   },
   "homepage": "https://github.com/maxogden/tabby",
-  "bugs": {
-    "url": "https://github.com/maxogden/tabby/issues"
+  "keywords": [
+    "browser",
+    "chromium",
+    "electron",
+    "minimal"
+  ],
+  "license": "ISC",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maxogden/tabby.git"
+  },
+  "scripts": {
+    "build": "electron-packager . Tabby --platform=darwin --arch=x64 --version=1.4.10 --prune --icon=Icon.icns",
+    "start": "electron index.js",
+    "test": "standard"
+  },
+  "standard": {
+    "ignore": [
+      "meny.js"
+    ]
   }
 }
