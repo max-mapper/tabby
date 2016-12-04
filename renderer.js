@@ -90,6 +90,13 @@ module.exports = function () {
     tab.addEventListener('did-get-response-details', function () {
       tab.__LOADFAIL = false
     })
+    tab.addEventListener('did-fail-load', function (e) {
+      var src = tab.getAttribute('src')
+      console.log('did-fail-load', src)
+      console.error('Error loading', src, e)
+      tab.setAttribute('src', errPage)
+      load.hide()
+    })
 
     var content = document.querySelector('.tabs')
     content.appendChild(tab)
