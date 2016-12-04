@@ -19,7 +19,7 @@ module.exports = function () {
     if (href.indexOf(' ') > -1) return search(original)
     if (href === 'about:blank') return tab.setAttribute('src', newPage)
     var parsed = url.parse(href)
-    if (!parsed.protocol) {
+    if (!parsed.protocol || parsed.protocol === 'localhost:') {
       href = 'http://' + href
       parsed = url.parse(href)
     }
