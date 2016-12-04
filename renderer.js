@@ -17,6 +17,7 @@ module.exports = function () {
     var original = href
     var tab = currentTab()
     if (href.indexOf(' ') > -1) return search(original)
+    if (href === 'about:blank') return tab.setAttribute('src', newPage)
     var parsed = url.parse(href)
     if (!parsed.protocol) {
       href = 'http://' + href
@@ -63,7 +64,8 @@ module.exports = function () {
       var src = tab.getAttribute('src')
       console.log('did-start-loading', src)
       if (src === errPage) return true
-      menu.input.value = src
+      if (src === newPage) menu.input.value = 'about:blank'
+      else menu.input.value = src
       delete tab.__GOT_RESPONSE
       load.show()
       return true
@@ -72,7 +74,8 @@ module.exports = function () {
       var src = tab.getAttribute('src')
       console.log('did-stop-loading', src)
       if (src === errPage) return true
-      menu.input.value = src
+      if (src === newPage) menu.input.value = 'about:blank'
+      else menu.input.value = src
       load.hide()
       if (tab.__LOADFAIL) {
         console.error('Error loading', src)
@@ -105,7 +108,8 @@ module.exports = function () {
     for (var i = 0; i < tabs.length; i++) {
       if (i === idx) {
         tabs[i].setAttribute('style', 'display: flex')
-        menu.input.value = tabs[i].getAttribute('src')
+        if (tabs[i].getAttribute('src') === newPage) menu.input.value = 'about:blank'
+        else menu.input.value = tabs[i].getAttribute('src')
       } else {
         tabs[i].setAttribute('style', 'display: none')
       }
